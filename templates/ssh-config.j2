@@ -1,0 +1,6 @@
+{{ ansible_managed|comment }}
+
+# Automatically load keys into the ssh-agent and store passphrases in keychain.
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes

@@ -1,0 +1,68 @@
+---
+- name: Generate SSH key pairs.
+  command: ssh-keygen -t "{{ item.value.type }}" -b "{{ item.value.bits }}" -C "{{ item.value.email }}" -N "{{ item.value.password }}" -f "{{ item.value.path }}"
+  args:
+    creates: "{{ item.value.path }}"
+  with_dict: "{{ ssh_keys_pairs }}"
+
+- name: Generate SSH config file.
+  template:
+    src: templates/ssh-config.j2
+    dest: "{{ ssh_keys_dir }}/config"
+    mode: 0600
+    backup: yes
+    force: yes
+
+- name: Ensure SSH agent is running.
+  shell: if ps -p $SSH_AGENT_PID > /dev/null; then echo "ssh-agent is already running"; else eval "$(ssh-agent -s)"; fi
+  register: ssh_keys_agent_running
+  changed_when: ssh_keys_agent_running.stdout != 'ssh-agent is already running'
+
+- name: Gather identities already added to SSH agent.
+  shell: ssh-add -l
+  register: ssh_keys_added_identities
+  failed_when: ssh_keys_added_identities.rc >= 2
+  changed_when: false
+
+- name: Ensure identities are added to SSH agent.
+  shell: |
+    spawn ssh-add -K "{{ item.value.path }}"
+    expect "Enter passphrase"
+    send "{{ item.value.password }}\n"
+  args:
+    executable: /usr/bin/expect
+  with_dict: "{{ ssh_keys_pairs }}"
+  when: item.value.path not in ssh_keys_added_identities.stdout
+
+- name: Add public keys to GitHub.
+  local_action:
+    module: github_key
+    name: "{{ item.1.label }}"
+    token: "{{ item.1.token }}"
+    pubkey: "{{ lookup('file', '{{ item.0.path }}.pub') }}"
+    state: present
+    force: no
+  when: item.1.token is defined
+  with_subelements:
+    - "{{ ssh_keys_pairs }}"
+    - github
+
+- name: Add public keys to Bitbucket
+  uri:
+    url: "https://api.bitbucket.org/2.0/users/{{ item.1.user }}/ssh-keys"
+    method: POST
+    body_format: json
+    body:
+      key: "{{ lookup('file', '{{ item.0.path }}.pub') }}"
+      label: "{{ item.1.label }}"
+    user: "{{ item.1.user }}"
+    password: "{{ item.1.password }}"
+    force_basic_auth: yes
+    status_code: 201,400
+    return_content: yes
+  when: item.1.password is defined
+  with_subelements:
+    - "{{ ssh_keys_pairs }}"
+    - bitbucket
+  register: ssh_keys_bitbucket_response
+  failed_when: (ssh_keys_bitbucket_response.status != 201) and ((ssh_keys_bitbucket_response.json.error.fields.key is not defined) or (ssh_keys_bitbucket_response.json.error.fields.key[0] != 'Someone has already added that SSH key.'))

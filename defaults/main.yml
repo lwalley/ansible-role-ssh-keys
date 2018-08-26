@@ -1,0 +1,4 @@
+---
+# Default variables for generating ssh key pairs.
+ssh_keys_dir: "{{ ansible_env.HOME }}/.ssh"
+ssh_keys_pairs: []
