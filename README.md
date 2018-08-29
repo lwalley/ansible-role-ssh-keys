@@ -4,9 +4,9 @@ Generates key pairs and manages SSH configuration for Mac OS X development.
 
 ## Requirements
 
-- ssh-agent
-- ssh-add
-- ssh-keygen
+[OpenSSH][openssh] must be installed on the system prior to running this role,
+specifically key management programs `ssh-agent`, `ssh-add` and `ssh-keygen`.
+OpenSSH is pre-installed on Mac OS X version 10.1 and later.
 
 ## Role Variables
 
@@ -28,6 +28,8 @@ Available variables with example values are listed below, for default values see
 
 ## Dependencies
 
+None.
+
 ## Example Playbook
 
     - hosts: localhost
@@ -36,4 +38,6 @@ Available variables with example values are listed below, for default values see
 
 ## License
 
-BSD
+MIT
+
+[openssh]: https://www.openssh.com

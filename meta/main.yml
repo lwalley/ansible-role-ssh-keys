@@ -1,10 +1,10 @@
 ---
-dependencies:
+dependencies: []
 
 galaxy_info:
   author: lwalley
   description: Generate and manages SSH keys for Mac OS X
-  license: license (BSD)
+  license: license (MIT)
   min_ansible_version: 2.6
   platforms:
     - name: MacOSX
