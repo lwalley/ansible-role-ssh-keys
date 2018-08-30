@@ -13,11 +13,6 @@
     backup: yes
     force: yes
 
-- name: Ensure SSH agent is running.
-  shell: if ps -p $SSH_AGENT_PID > /dev/null; then echo "ssh-agent is already running"; else eval "$(ssh-agent -s)"; fi
-  register: ssh_keys_agent_running
-  changed_when: ssh_keys_agent_running.stdout != 'ssh-agent is already running'
-
 - name: Gather identities already added to SSH agent.
   shell: ssh-add -l
   register: ssh_keys_added_identities
