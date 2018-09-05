@@ -1,6 +1,13 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 {{ ansible_managed|comment }}
 
-# Automatically load keys into the ssh-agent and store passphrases in keychain.
-Host *
-  AddKeysToAgent yes
-  UseKeychain yes
+{% if (ssh_keys_config is defined) and ssh_keys_config %}
+  {% for host in ssh_keys_config -%}
+  Host {{ host.host }}
+    {% if (host.config is defined) and host.config %}
+      {%- for config in host.config -%}
+        {{ config.0|indent(2, true) }} {{ config.1 }}
+      {% endfor %}
+    {% endif %}
+  {%- endfor %}
+{% endif %}

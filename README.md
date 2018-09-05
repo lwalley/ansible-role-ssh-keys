@@ -25,6 +25,22 @@ Available variables with example values are listed below, for default values see
           - { label: example, token: example }
         bitbucket:
           - { label: example, password: example, user: example }
+    ssh_keys_config:
+      - host: "example"
+        config:
+          - [ "HostName", "example.org" ]
+      - host: "example.dev"
+        config:
+          - [ "HostName", "111.222.333.444" ]
+      - host: "*.io"
+        config:
+          - [ "IdentityFile", "{{ ssh_keys_dir }}/id_rsa" ]
+          - [ "User", "io" ]
+      - host: "*"
+        config:
+          - [ "AddKeysToAgent", "yes" ]
+          - [ "UseKeychain", "yes" ]
+          - [ "User", "example" ]
 
 ## Dependencies
 
