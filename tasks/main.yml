@@ -4,6 +4,7 @@
   args:
     creates: "{{ item.value.path }}"
   with_dict: "{{ ssh_keys_pairs }}"
+  no_log: true
 
 - name: Generate SSH config file.
   template:
@@ -28,6 +29,7 @@
     executable: /usr/bin/expect
   with_dict: "{{ ssh_keys_pairs }}"
   when: item.value.path not in ssh_keys_added_identities.stdout
+  no_log: true
 
 - name: Add public keys to GitHub.
   local_action:
@@ -41,6 +43,7 @@
   with_subelements:
     - "{{ ssh_keys_pairs }}"
     - github
+  no_log: true
 
 - name: Add public keys to Bitbucket
   uri:
@@ -61,3 +64,4 @@
     - bitbucket
   register: ssh_keys_bitbucket_response
   failed_when: (ssh_keys_bitbucket_response.status != 201) and ((ssh_keys_bitbucket_response.json.error.fields.key is not defined) or (ssh_keys_bitbucket_response.json.error.fields.key[0] != 'Someone has already added that SSH key.'))
+  no_log: true
